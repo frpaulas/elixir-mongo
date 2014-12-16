@@ -1,3 +1,4 @@
+require IEx
 defmodule Mongo.Db do
   @moduledoc """
  Module holding operations that can be performed on MongoDB databases
@@ -41,6 +42,7 @@ defmodule Mongo.Db do
   def auth(%Mongo.Db{auth: nil}=db), do: {:ok, db}
   def auth(%Mongo.Db{auth: {username, hash_password}}=db) do
     nonce = getnonce(db)
+    IEx.pry
     case Mongo.Request.cmd(db, %{authenticate: 1}, %{nonce: nonce, user: username, key: hash(nonce <> username <> hash_password)})
       |> Server.call do
       {:ok, resp} ->
