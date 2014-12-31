@@ -1,4 +1,3 @@
-require IEx
 defmodule Mongo.Db do
   @moduledoc """
  Module holding operations that can be performed on MongoDB databases
