@@ -99,10 +99,11 @@ defmodule Mongo.Response do
   Returns `{:ok, doc}` or transfers the error message
   """
   def cmd(%Mongo.Response{nbdoc: 1, buffer: buffer}) do
-    case buffer |> Bson.decode do
-      nil -> %Mongo.Error{msg: :"no document received"}
-      %{ok: ok}=doc when ok>0 -> {:ok, doc}
-      errdoc -> %Mongo.Error{msg: :"cmd error", acc: errdoc}
+    resp = buffer |> Bson.decode
+    cond do
+      is_nil(resp)   -> %Mongo.Error{msg: :"no document received"}
+      resp["ok"] > 0 -> {:ok, resp}
+      true           -> %Mongo.Error{msg: :"cmd error", acc: resp}
     end
   end
 
@@ -187,10 +188,15 @@ defmodule Mongo.Response do
   Returns `{:ok, nonce}` or transfers the error message
   """
   def getnonce(response) do
-    case cmd(response) do
-      {:ok, doc} -> doc[:nonce]
+    case response.decoder.(response.buffer) do
+      {:cont, hashdict,_} -> {:ok, hashdict["nonce"]}
       error -> error
     end
+    # below is the original code and I pretty sure it's wrong
+    # case cmd(response) do
+    #   {:ok, doc} -> doc[:nonce]
+    #   error -> error
+    # end
   end
   @doc """
   Decodes an error respsonse

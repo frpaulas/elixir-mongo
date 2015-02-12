@@ -40,7 +40,7 @@ defmodule Mongo.Db do
   # Authenticates a user to a database (or do it again after failure)
   def auth(%Mongo.Db{auth: nil}=db), do: {:ok, db}
   def auth(%Mongo.Db{auth: {username, hash_password}}=db) do
-    nonce = getnonce(db)
+    {:ok, nonce} = getnonce(db)
     case cmd_sync(db, %{authenticate: 1}, %{nonce: nonce, user: username, key: hash(nonce <> username <> hash_password)}) do
       {:ok, resp} ->
         case Mongo.Response.success(resp) do
